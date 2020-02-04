@@ -2,8 +2,12 @@
   const SIGNATURE = {
     "89504e47": "image/png",
     "47494638": "image/gif",
-    ffd8ffdB: "image/jpeg",
-    ffd8ffe0: "image/jpeg"
+    ffd8ffdb: "image/jpeg",
+    ffd8ffe0: "image/jpeg",
+    ffd8ffe1: "image/jpeg",
+    ffd8ffe2: "image/jpeg",
+    ffd8ffe3: "image/jpeg",
+    ffd8ffe8: "image/jpeg"
     //'25504446': 'application/pdf',
   };
 
