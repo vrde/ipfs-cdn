@@ -26,14 +26,20 @@ async function parse(root, inFile, outFile, upload = true, dryRun = false) {
         const cid = result.path;
         const original = $(elem).toString();
         $(elem).attr("src", "ipfs://" + cid);
-        console.log(
-          `[Replace] File: ${inFile}`,
-          `\n\toriginal: ${original}`,
-          `\n\tnew     : ${$(elem).toString()}`
-        );
+        if (outFile) {
+          console.log(
+            `[Replace] File: ${inFile}`,
+            `\n\tOriginal: ${original}`,
+            `\n\tNew     : ${$(elem).toString()}`
+          );
+        } else {
+          console.log(`[Parse] File: ${inFile}`, `\n\tPin: ${cid}`);
+        }
       }
     })
     .get();
+
+  if (!outFile) return;
 
   $("head").append([
     '<script src="https://unpkg.com/ipfs/dist/index.js"></script>',

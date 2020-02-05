@@ -10,7 +10,8 @@ const copyFile = promisify(fs.copyFile);
 
 program
   .version("0.0.1")
-  .command("decentralize <dir>")
+
+  .command("build <dir>")
   .option("-o, --output <outDir>", "Output directory", "build")
   .option("-d, --dry-run", "Dry run")
   .option("-i, --in-place", "Change current file", false)
@@ -34,6 +35,23 @@ program
         console.log("[Process]", inFile, "->", outFile);
         try {
           await parse(dir, inFile, outFile, cmdObj.ipfs, cmdObj.dryRun);
+        } catch (e) {
+          console.error(e.toString());
+          process.exit(-1);
+        }
+      }
+    }
+  });
+
+program
+  .command("pin <dir>")
+  .option("-d, --dry-run", "Dry run")
+  .action(async (dir, cmdObj) => {
+    for await (const inFile of getFiles(dir)) {
+      if (path.extname(inFile) === ".html") {
+        console.log("[Process]", inFile);
+        try {
+          await parse(dir, inFile, null, true, cmdObj.dryRun);
         } catch (e) {
           console.error(e.toString());
           process.exit(-1);
