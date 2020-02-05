@@ -7,6 +7,7 @@ const program = require("commander");
 const { getFiles } = require("./utils");
 const { parse } = require("./parse");
 const copyFile = promisify(fs.copyFile);
+const mkdir = promisify(fs.mkdir);
 
 program
   .version("0.0.1")
@@ -19,6 +20,7 @@ program
   .option("-n, --no-upload", "Do not upload assets to IPFS")
   .action(async (dir, cmdObj) => {
     if (!cmdObj.dryRun) {
+      await mkdir(dir, { recursive: true });
       const shimIn = path.join(__dirname, "ipfs-shim.js");
       const shimOut = path.join(
         cmdObj.inPlace ? dir : cmdObj.output,

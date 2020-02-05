@@ -41,11 +41,16 @@ async function parse(root, inFile, outFile, upload = true, dryRun = false) {
 
   if (!outFile) return;
 
+  const ipfsShimPath = path.join(
+    path.relative(path.dirname(inFile), root),
+    "ipfs-shim.js"
+  );
+
   $("head").append([
     '<script src="https://unpkg.com/ipfs/dist/index.js"></script>',
     '<script src="https://unpkg.com/hlsjs-ipfs-loader@0.1.4/dist/index.js"></script>',
     '<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>',
-    '<script src="/ipfs-shim.js"></script>'
+    `<script src="${ipfsShimPath}"></script>`
   ]);
   await Promise.all(promises);
   const dirname = path.dirname(outFile);
