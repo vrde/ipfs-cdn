@@ -21,7 +21,6 @@ async function parse(root, inFile, outFile, upload = true, dryRun = false) {
       } else {
         src = path.resolve(location, src);
       }
-      console.log(upload || dryRun ? "[Hashing]" : "[Upload]", inFile, src);
       const results = ipfs.add(await readFile(src), { onlyHash: !upload });
       for await (const result of results) {
         const cid = result.path;

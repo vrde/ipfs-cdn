@@ -5,7 +5,7 @@ const path = require("path");
 const { promisify } = require("util");
 const program = require("commander");
 const { getFiles } = require("./utils");
-const { parse } = require("./ipfs-cdn");
+const { parse } = require("./parse");
 const copyFile = promisify(fs.copyFile);
 
 program
