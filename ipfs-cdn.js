@@ -1,21 +1,17 @@
-#!/usr/bin/env node
-
 const fs = require("fs");
 const path = require("path");
 const { promisify } = require("util");
 const cheerio = require("cheerio");
 const ipfsClient = require("ipfs-http-client");
 
-const open = promisify(fs.open);
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
+const mkdir = promisify(fs.mkdir);
 const ipfs = ipfsClient();
 
-async function uploadAndReplace() {}
-
-async function parse(root, output, file) {
-  const location = path.dirname(file);
-  const source = await readFile(file);
+async function parse(root, inFile, outFile, upload = true, dryRun = false) {
+  const location = path.dirname(inFile);
+  const source = await readFile(inFile);
   const $ = cheerio.load(source);
   const promises = $("img")
     .map(async (_, elem) => {
@@ -25,11 +21,17 @@ async function parse(root, output, file) {
       } else {
         src = path.resolve(location, src);
       }
-
-      for await (const result of ipfs.add(await readFile(src))) {
+      console.log(upload || dryRun ? "[Hashing]" : "[Upload]", inFile, src);
+      const results = ipfs.add(await readFile(src), { onlyHash: !upload });
+      for await (const result of results) {
         const cid = result.path;
-        // console.log("result", src, result);
+        const original = $(elem).toString();
         $(elem).attr("src", "ipfs://" + cid);
+        console.log(
+          `[Replace] File: ${inFile}`,
+          `\n\toriginal: ${original}`,
+          `\n\tnew     : ${$(elem).toString()}`
+        );
       }
       return true;
     })
@@ -42,13 +44,20 @@ async function parse(root, output, file) {
     '<script src="/ipfs-shim.js"></script>'
   ]);
   await Promise.all(promises);
-  //console.log(file);
-  await writeFile(path.join(output, file), $.html());
+  const dirname = path.dirname(outFile);
+  console.log(
+    dryRun ? "[Write (dry)]" : "[Write]",
+    "File:",
+    inFile,
+    "to:",
+    outFile
+  );
+  if (!dryRun) {
+    await mkdir(dirname, { recursive: true });
+    await writeFile(outFile, $.html());
+  }
 }
 
-function main(root, output, files) {
-  files.forEach(parse.bind(null, root, output));
-}
-
-const [_0, _1, root, output, ...files] = process.argv;
-main(root, output, files);
+module.exports = {
+  parse
+};

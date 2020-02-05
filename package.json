@@ -6,10 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "ipfs-cdn": "./index.js"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
+    "commander": "^4.1.1",
+    "dotenv": "^8.2.0",
     "ipfs-http-client": "^42.0.0"
   }
 }
