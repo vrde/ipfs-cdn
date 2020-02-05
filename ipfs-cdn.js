@@ -33,7 +33,6 @@ async function parse(root, inFile, outFile, upload = true, dryRun = false) {
           `\n\tnew     : ${$(elem).toString()}`
         );
       }
-      return true;
     })
     .get();
 
