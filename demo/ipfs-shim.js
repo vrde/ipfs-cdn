@@ -77,6 +77,7 @@
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
   function bytesToBase64(bytes) {
+    // from: https://gist.github.com/enepomnyaschih/72c423f727d395eeaa09697058238727
     let result = "",
       i,
       l = bytes.length;
