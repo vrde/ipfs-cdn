@@ -38,6 +38,33 @@ async function parse(root, inFile, outFile, upload = true, dryRun = false) {
       }
     })
     .get();
+  promises.extend(
+    $("img")
+      .map(async (_, elem) => {
+        let src = $(elem).attr("src");
+        if (src.startsWith("/")) {
+          src = path.join(root, src);
+        } else {
+          src = path.resolve(location, src);
+        }
+        const results = ipfs.add(await readFile(src), { onlyHash: !upload });
+        for await (const result of results) {
+          const cid = result.path;
+          const original = $(elem).toString();
+          $(elem).attr("src", "ipfs://" + cid);
+          if (outFile) {
+            console.log(
+              `[Replace] File: ${inFile}`,
+              `\n\tOriginal: ${original}`,
+              `\n\tNew     : ${$(elem).toString()}`
+            );
+          } else {
+            console.log(`[Parse] File: ${inFile}`, `\n\tPin: ${cid}`);
+          }
+        }
+      })
+      .get()
+  );
 
   if (!outFile) return;
 

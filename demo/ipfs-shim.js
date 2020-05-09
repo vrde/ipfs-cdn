@@ -73,22 +73,55 @@
     return mutationObserver;
   }
 
-  async function toDataURL(raw) {
-    const signature = raw.slice(0, 4).toString("hex");
-    const mimetype = SIGNATURE[signature];
+  const base64abc =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-    if (!mimetype) {
-      throw new Error("Cannot find signature", signature);
+  function bytesToBase64(bytes) {
+    let result = "",
+      i,
+      l = bytes.length;
+    for (i = 2; i < l; i += 3) {
+      result += base64abc[bytes[i - 2] >> 2];
+      result += base64abc[((bytes[i - 2] & 0x03) << 4) | (bytes[i - 1] >> 4)];
+      result += base64abc[((bytes[i - 1] & 0x0f) << 2) | (bytes[i] >> 6)];
+      result += base64abc[bytes[i] & 0x3f];
+    }
+    if (i === l + 1) {
+      // 1 octet yet to write
+      result += base64abc[bytes[i - 2] >> 2];
+      result += base64abc[(bytes[i - 2] & 0x03) << 4];
+      result += "==";
+    }
+    if (i === l) {
+      // 2 octets yet to write
+      result += base64abc[bytes[i - 2] >> 2];
+      result += base64abc[((bytes[i - 2] & 0x03) << 4) | (bytes[i - 1] >> 4)];
+      result += base64abc[(bytes[i - 1] & 0x0f) << 2];
+      result += "=";
+    }
+    return result;
+  }
+
+  async function toDataURL(raw) {
+    let data = new Uint8Array();
+    let dataRead = 0;
+    let mimetype;
+    for await (let chunk of raw) {
+      if (dataRead === 0 && chunk.byteLength >= 4) {
+        const signature = chunk.slice(0, 4).toString("hex");
+        mimetype = SIGNATURE[signature];
+        if (!mimetype) {
+          throw new Error("Cannot find signature", signature);
+        }
+      }
+      const tmp = new Uint8Array(data.byteLength + chunk.byteLength);
+      tmp.set(data);
+      tmp.set(chunk, data.byteLength);
+      data = tmp;
+      dataRead += chunk.byteLength;
     }
 
-    return `data:${mimetype};base64,${raw.toString("base64")}`;
-
-    // return new Promise((resolve, reject) => {
-    //   const reader = new FileReader();
-    //   reader.onloadend = () => resolve(reader.result);
-    //   reader.onerror = reject;
-    //   reader.readAsDataURL(blob);
-    // });
+    return `data:${mimetype};base64,${bytesToBase64(data)}`;
   }
 
   async function loadUrl(ipfs, e) {
